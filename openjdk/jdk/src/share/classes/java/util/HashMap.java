@@ -243,7 +243,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
     static final int MAXIMUM_CAPACITY = 1 << 30;
 
     /**
-     * 负载因子
+     * 默认负载因子
      * The load factor used when none specified in constructor.
      */
     static final float DEFAULT_LOAD_FACTOR = 0.75f;
@@ -413,7 +413,9 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
     transient int size;
 
     /**
-     * 至今为止被成功更改次数。
+     * 结构至今为止被成功更改次数。
+     * 指修改Mapping数目或者进行rehash操作。
+     * 即，修改已经存在节点不会导致此值进行修改。
      * 如果在进行一次操作时前后不一致将抛出{@link ConcurrentModificationException}
      * The number of times this HashMap has been structurally modified
      * Structural modifications are those that change the number of mappings in
@@ -477,6 +479,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
     }
 
     /**
+     * 默认构造方法，仅复制负载因子 其他值均为默认值
      * Constructs an empty <tt>HashMap</tt> with the default initial capacity
      * (16) and the default load factor (0.75).
      */
@@ -605,6 +608,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
     }
 
     /**
+     * 放置新对象到Map中。如果存在同样的key值，那么旧值将被覆盖
      * Associates the specified value with the specified key in this map.
      * If the map previously contained a mapping for the key, the old
      * value is replaced.
@@ -621,54 +625,81 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
     }
 
     /**
+     * 实现Map的put及相关方法
+     * 快速返回请点击
+     * @see #get(Object)
      * Implements Map.put and related methods
      *
      * @param hash hash for key
      * @param key the key
      * @param value the value to put
-     * @param onlyIfAbsent if true, don't change existing value
+     * @param onlyIfAbsent if true, don't change existing value  为true则不更改已经存在的key
      * @param evict if false, the table is in creation mode.
      * @return previous value, or null if none
+     * @see #get(Object)
      */
-    final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
-                   boolean evict) {
-        Node<K,V>[] tab; Node<K,V> p; int n, i;
-        if ((tab = table) == null || (n = tab.length) == 0)
+    final V putVal(int hash, K key, V value, boolean onlyIfAbsent, boolean evict) {
+        //数组
+        Node<K,V>[] tab;
+        //当前元素
+        Node<K,V> p;
+        // n 数组长度
+        int n, i;
+        //复制tab元素，并将当前tab长度赋值给n
+        if ((tab = table) == null || (n = tab.length) == 0){
             n = (tab = resize()).length;
-        if ((p = tab[i = (n - 1) & hash]) == null)
+        }
+
+        if ((p = tab[i = (n - 1) & hash]) == null){
+            //获取第一个节点 如果节点为空 直接创建新节点
             tab[i] = newNode(hash, key, value, null);
-        else {
+        } else {
+            //如果节点不为空 说明此位置已存在链表（数）需要挂载到后面
+            // e existing mapping for key ；k 用于获取当前循环k
             Node<K,V> e; K k;
-            if (p.hash == hash &&
-                ((k = p.key) == key || (key != null && key.equals(k))))
+            if (p.hash == hash && ((k = p.key) == key || (key != null && key.equals(k)))){
+                //判定是否是头节点
                 e = p;
-            else if (p instanceof TreeNode)
+            } else if (p instanceof TreeNode){
+                //非头结点 且为树结构  尝试放置到树中
                 e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
-            else {
+            } else {
+                //非头结点且为链表 循环链表验证是否是已经存在的key
                 for (int binCount = 0; ; ++binCount) {
-                    if ((e = p.next) == null) {
+                    if ((e = p.next) == null) {//循环到尾端 链表长度加一
                         p.next = newNode(hash, key, value, null);
-                        if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                        if (binCount >= TREEIFY_THRESHOLD - 1){// -1 for 1st
+                            //大于树负载因子时将转换为红黑树
                             treeifyBin(tab, hash);
+                        }
                         break;
                     }
-                    if (e.hash == hash &&
-                        ((k = e.key) == key || (key != null && key.equals(k))))
+                    if (e.hash == hash && ((k = e.key) == key || (key != null && key.equals(k)))){
+                        //链表中存在对应的key
                         break;
+                    }
                     p = e;
                 }
             }
-            if (e != null) { // existing mapping for key
+
+            if (e != null) { // existing mapping for key  存在相同key情况处理
                 V oldValue = e.value;
-                if (!onlyIfAbsent || oldValue == null)
+                if (!onlyIfAbsent || oldValue == null){
+                    //更改当前key对应的值
                     e.value = value;
+                }
+                //此方法供LinkedListMap使用
                 afterNodeAccess(e);
                 return oldValue;
             }
         }
+
+        //完成新增操作后更新被修改次数
         ++modCount;
-        if (++size > threshold)
+        //大于负载后进行扩容
+        if (++size > threshold){
             resize();
+        }
         afterNodeInsertion(evict);
         return null;
     }
