@@ -134,8 +134,7 @@ import java.util.function.Function;
  * @see     Hashtable
  * @since   1.2
  */
-public class HashMap<K,V> extends AbstractMap<K,V>
-    implements Map<K,V>, Cloneable, Serializable {
+public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneable, Serializable {
 
     private static final long serialVersionUID = 362498820763181265L;
 
@@ -230,11 +229,13 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      */
 
     /**
+     * 默认初始化大小  16 必须为2的倍数
      * The default initial capacity - MUST be a power of two.
      */
     static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
 
     /**
+     * 最大的hash桶大小2^30次方。
      * The maximum capacity, used if a higher value is implicitly specified
      * by either of the constructors with arguments.
      * MUST be a power of two <= 1<<30.
@@ -242,11 +243,13 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     static final int MAXIMUM_CAPACITY = 1 << 30;
 
     /**
+     * 负载因子
      * The load factor used when none specified in constructor.
      */
     static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
     /**
+     * 当超过这个值之后将由链表替换为树
      * The bin count threshold for using a tree rather than list for a
      * bin.  Bins are converted to trees when adding an element to a
      * bin with at least this many nodes. The value must be greater
@@ -257,6 +260,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     static final int TREEIFY_THRESHOLD = 8;
 
     /**
+     * 如果小于6个之后将重新更换为链表
      * The bin count threshold for untreeifying a (split) bin during a
      * resize operation. Should be less than TREEIFY_THRESHOLD, and at
      * most 6 to mesh with shrinkage detection under removal.
@@ -387,6 +391,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     /* ---------------- Fields -------------- */
 
     /**
+     * 在第一次使用的时候初始化 自动扩容。当重新分配大小时，其长度总会是2的倍数
      * The table, initialized on first use, and resized as
      * necessary. When allocated, length is always a power of two.
      * (We also tolerate length zero in some operations to allow
@@ -395,17 +400,21 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     transient Node<K,V>[] table;
 
     /**
+     * 缓存entrySet，被{@link #keySet()}和{@link #values()} 调用
      * Holds cached entrySet(). Note that AbstractMap fields are used
      * for keySet() and values().
      */
     transient Set<Map.Entry<K,V>> entrySet;
 
     /**
+     * 保存元素数量
      * The number of key-value mappings contained in this map.
      */
     transient int size;
 
     /**
+     * 至今为止被成功更改次数。
+     * 如果在进行一次操作时前后不一致将抛出{@link ConcurrentModificationException}
      * The number of times this HashMap has been structurally modified
      * Structural modifications are those that change the number of mappings in
      * the HashMap or otherwise modify its internal structure (e.g.,
