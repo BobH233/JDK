@@ -755,8 +755,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         return (Node<K,V>)U.getObjectVolatile(tab, ((long)i << ASHIFT) + ABASE);
     }
 
-    static final <K,V> boolean casTabAt(Node<K,V>[] tab, int i,
-                                        Node<K,V> c, Node<K,V> v) {
+    static final <K,V> boolean casTabAt(Node<K,V>[] tab, int i, Node<K,V> c, Node<K,V> v) {
         return U.compareAndSwapObject(tab, ((long)i << ASHIFT) + ABASE, c, v);
     }
 
@@ -773,6 +772,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     transient volatile Node<K,V>[] table;
 
     /**
+     * 仅在resize阶段不为空
      * The next table to use; non-null only while resizing.
      */
     private transient volatile Node<K,V>[] nextTable;
@@ -1006,6 +1006,9 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         return putVal(key, value, false);
     }
 
+    /**
+     * 实现对键值对的保存
+     */
     /** Implementation for put and putIfAbsent */
     final V putVal(K key, V value, boolean onlyIfAbsent) {
         if (key == null || value == null) throw new NullPointerException();
