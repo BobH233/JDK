@@ -287,6 +287,7 @@ public class ThreadLocal<T> {
 
     /**
      * ThreadLocalMap底层为数组
+     * 线程私有变量 不涉及多线程操作 所以不需要任何安全机制
      * ThreadLocalMap is a customized hash map suitable only for
      * maintaining thread local values. No operations are exported
      * outside of the ThreadLocal class. The class is package private to
