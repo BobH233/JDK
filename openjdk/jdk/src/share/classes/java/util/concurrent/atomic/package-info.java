@@ -34,6 +34,7 @@
  */
 
 /**
+ * 一个用于提供锁安全/线程安全的编程小工具。
  * A small toolkit of classes that support lock-free thread-safe
  * programming on single variables.  In essence, the classes in this
  * package extend the notion of {@code volatile} values, fields, and

@@ -120,31 +120,44 @@ public class LinkedList<E>
     }
 
     /**
+     * 添加到头节点
      * Links e as first element.
      */
     private void linkFirst(E e) {
+        //复制头节点
         final Node<E> f = first;
+        //创建新的头节点
         final Node<E> newNode = new Node<>(null, e, f);
+        //将头节点指向新创建的节点
         first = newNode;
-        if (f == null)
+        if (f == null){
+            //如果原始头节点为null 那么尾节点也为null
             last = newNode;
-        else
+        } else {
+            //不为空则将新创建的节点下一个节点指向原始头节点
             f.prev = newNode;
+        }
+        //size 自增 增加修改次数
         size++;
         modCount++;
     }
 
     /**
+     * 添加尾节点
      * Links e as last element.
      */
     void linkLast(E e) {
+        //创建新的尾节点及保存原始尾节点
         final Node<E> l = last;
         final Node<E> newNode = new Node<>(l, e, null);
         last = newNode;
-        if (l == null)
+        if (l == null){
+            //尾节点为空 说明链表为空 创建头节点
             first = newNode;
-        else
+        } else {
+            //否则将原始尾节点的next指向新创建尾节点
             l.next = newNode;
+        }
         size++;
         modCount++;
     }
@@ -166,6 +179,7 @@ public class LinkedList<E>
     }
 
     /**
+     * 弹出头节点
      * Unlinks non-null first node f.
      */
     private E unlinkFirst(Node<E> f) {
@@ -175,16 +189,19 @@ public class LinkedList<E>
         f.item = null;
         f.next = null; // help GC
         first = next;
-        if (next == null)
+        if (next == null){
             last = null;
-        else
+        } else {
             next.prev = null;
+        }
+
         size--;
         modCount++;
         return element;
     }
 
     /**
+     * 弹出尾节点
      * Unlinks non-null last node l.
      */
     private E unlinkLast(Node<E> l) {
@@ -192,12 +209,15 @@ public class LinkedList<E>
         final E element = l.item;
         final Node<E> prev = l.prev;
         l.item = null;
-        l.prev = null; // help GC
+        // 去除关联 help GC
+        l.prev = null;
         last = prev;
-        if (prev == null)
+        if (prev == null){
             first = null;
-        else
+        } else{
             prev.next = null;
+        }
+
         size--;
         modCount++;
         return element;
@@ -259,28 +279,36 @@ public class LinkedList<E>
     }
 
     /**
+     * 移除头即诶但
      * Removes and returns the first element from this list.
      *
      * @return the first element from this list
      * @throws NoSuchElementException if this list is empty
      */
+    @Override
     public E removeFirst() {
         final Node<E> f = first;
-        if (f == null)
+        if (f == null){
             throw new NoSuchElementException();
+        }
+
         return unlinkFirst(f);
     }
 
     /**
+     * 移除尾节点
      * Removes and returns the last element from this list.
      *
      * @return the last element from this list
      * @throws NoSuchElementException if this list is empty
      */
+    @Override
     public E removeLast() {
         final Node<E> l = last;
-        if (l == null)
+        if (l == null){
             throw new NoSuchElementException();
+        }
+
         return unlinkLast(l);
     }
 
@@ -592,18 +620,21 @@ public class LinkedList<E>
      * @return the index of the first occurrence of the specified element in
      *         this list, or -1 if this list does not contain the element
      */
+    @Override
     public int indexOf(Object o) {
         int index = 0;
         if (o == null) {
             for (Node<E> x = first; x != null; x = x.next) {
-                if (x.item == null)
+                if (x.item == null){
                     return index;
+                }
                 index++;
             }
         } else {
             for (Node<E> x = first; x != null; x = x.next) {
-                if (o.equals(x.item))
+                if (o.equals(x.item)){
                     return index;
+                }
                 index++;
             }
         }
