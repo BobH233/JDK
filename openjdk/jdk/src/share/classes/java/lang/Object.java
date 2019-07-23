@@ -237,12 +237,18 @@ public class Object {
     }
 
     /**
+     * 唤醒一个等待当前对象的线程。
+     * 如果有多个线程等待，那么仅仅唤醒其中一个。
+     * 具体唤醒哪个线程是随机的，取决于具体的实现。
      * Wakes up a single thread that is waiting on this object's
      * monitor. If any threads are waiting on this object, one of them
      * is chosen to be awakened. The choice is arbitrary and occurs at
      * the discretion of the implementation. A thread waits on an object's
      * monitor by calling one of the {@code wait} methods.
      * <p>
+     * 唤醒的线程会在获取当前线程释放的锁后继续运行。
+     * 并且同样需要与其他线程竞争锁。
+     * 唤醒的线程并不一定获取到锁的下一个线程
      * The awakened thread will not be able to proceed until the current
      * thread relinquishes the lock on this object. The awakened thread will
      * compete in the usual manner with any other threads that might be

@@ -1236,8 +1236,7 @@ class Thread implements Runnable {
      *          <i>interrupted status</i> of the current thread is
      *          cleared when this exception is thrown.
      */
-    public final synchronized void join(long millis)
-    throws InterruptedException {
+    public final synchronized void join(long millis) throws InterruptedException {
         long base = System.currentTimeMillis();
         long now = 0;
 
@@ -1245,10 +1244,13 @@ class Thread implements Runnable {
             throw new IllegalArgumentException("timeout value is negative");
         }
 
+        //默认入口
         if (millis == 0) {
+            //当前线程存活 继续等待
             while (isAlive()) {
                 wait(0);
             }
+            //线程消亡  直接返回
         } else {
             while (isAlive()) {
                 long delay = millis - now;
