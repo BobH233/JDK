@@ -770,6 +770,7 @@ class Thread implements Runnable {
     }
 
     /**
+     * 强制线程停止运行
      * Forces the thread to stop executing.
      * <p>
      * If there is a security manager installed, its <code>checkAccess</code>

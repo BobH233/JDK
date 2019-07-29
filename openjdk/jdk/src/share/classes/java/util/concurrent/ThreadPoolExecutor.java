@@ -476,6 +476,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     private int largestPoolSize;
 
     /**
+     * 统计当前完成任务情况。当工作线程终止时进行更新。
+     * 当获取到主锁时才可以访问
      * Counter for completed tasks. Updated only on termination of
      * worker threads. Accessed only under mainLock.
      */
@@ -528,6 +530,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     private volatile boolean allowCoreThreadTimeOut;
 
     /**
+     * 核心线程数量
      * Core pool size is the minimum number of workers to keep alive
      * (and not allow to time out etc) unless allowCoreThreadTimeOut
      * is set, in which case the minimum is zero.
@@ -535,12 +538,14 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     private volatile int corePoolSize;
 
     /**
+     * 最大线程数量
      * Maximum pool size. Note that the actual maximum is internally
      * bounded by CAPACITY.
      */
     private volatile int maximumPoolSize;
 
     /**
+     * 默认拒绝策略 抛出异常RejectedExecutionException
      * The default rejected execution handler
      */
     private static final RejectedExecutionHandler defaultHandler =
@@ -585,10 +590,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * state to a negative value, and clear it upon start (in
      * runWorker).
      */
-    private final class Worker
-        extends AbstractQueuedSynchronizer
-        implements Runnable
-    {
+    private final class Worker extends AbstractQueuedSynchronizer implements Runnable {
         /**
          * This class will never be serialized, but we provide a
          * serialVersionUID to suppress a javac warning.
@@ -691,8 +693,10 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
             int c = ctl.get();
             if (isRunning(c) ||
                 runStateAtLeast(c, TIDYING) ||
-                (runStateOf(c) == SHUTDOWN && ! workQueue.isEmpty()))
+                (runStateOf(c) == SHUTDOWN && ! workQueue.isEmpty())) {
                 return;
+            }
+
             if (workerCountOf(c) != 0) { // Eligible to terminate
                 interruptIdleWorkers(ONLY_ONE);
                 return;
@@ -1187,13 +1191,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      *         {@code maximumPoolSize < corePoolSize}
      * @throws NullPointerException if {@code workQueue} is null
      */
-    public ThreadPoolExecutor(int corePoolSize,
-                              int maximumPoolSize,
-                              long keepAliveTime,
-                              TimeUnit unit,
-                              BlockingQueue<Runnable> workQueue) {
-        this(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
-             Executors.defaultThreadFactory(), defaultHandler);
+    public ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
+        this(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, Executors.defaultThreadFactory(), defaultHandler);
     }
 
     /**
@@ -1300,13 +1299,14 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                               BlockingQueue<Runnable> workQueue,
                               ThreadFactory threadFactory,
                               RejectedExecutionHandler handler) {
-        if (corePoolSize < 0 ||
-            maximumPoolSize <= 0 ||
-            maximumPoolSize < corePoolSize ||
-            keepAliveTime < 0)
+        if (corePoolSize < 0 || maximumPoolSize <= 0 || maximumPoolSize < corePoolSize || keepAliveTime < 0){
             throw new IllegalArgumentException();
-        if (workQueue == null || threadFactory == null || handler == null)
+        }
+
+        if (workQueue == null || threadFactory == null || handler == null) {
             throw new NullPointerException();
+        }
+
         this.corePoolSize = corePoolSize;
         this.maximumPoolSize = maximumPoolSize;
         this.workQueue = workQueue;
@@ -1330,8 +1330,9 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * @throws NullPointerException if {@code command} is null
      */
     public void execute(Runnable command) {
-        if (command == null)
+        if (command == null) {
             throw new NullPointerException();
+        }
         /*
          * Proceed in 3 steps:
          *
@@ -1354,19 +1355,24 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
          */
         int c = ctl.get();
         if (workerCountOf(c) < corePoolSize) {
-            if (addWorker(command, true))
+            if (addWorker(command, true)){
                 return;
+            }
             c = ctl.get();
         }
         if (isRunning(c) && workQueue.offer(command)) {
             int recheck = ctl.get();
-            if (! isRunning(recheck) && remove(command))
+            if (! isRunning(recheck) && remove(command)) {
                 reject(command);
-            else if (workerCountOf(recheck) == 0)
+            }
+
+            else if (workerCountOf(recheck) == 0) {
                 addWorker(null, false);
+            }
         }
-        else if (!addWorker(command, false))
+        else if (!addWorker(command, false)) {
             reject(command);
+        }
     }
 
     /**
