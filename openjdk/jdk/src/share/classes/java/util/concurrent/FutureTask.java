@@ -74,6 +74,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
      */
 
     /**
+     * 任务运行状态。
      * The run state of this task, initially NEW.  The run state
      * transitions to a terminal state only in methods set,
      * setException, and cancel.  During completion, state may take on
@@ -104,7 +105,12 @@ public class FutureTask<V> implements RunnableFuture<V> {
     private Object outcome; // non-volatile, protected by state reads/writes
     /** The thread running the callable; CASed during run() */
     private volatile Thread runner;
-    /** Treiber stack of waiting threads */
+
+
+    /**
+     * 等待线程监视栈
+     * Treiber stack of waiting threads
+     */
     private volatile WaitNode waiters;
 
     /**
@@ -247,16 +253,20 @@ public class FutureTask<V> implements RunnableFuture<V> {
     protected void setException(Throwable t) {
         if (UNSAFE.compareAndSwapInt(this, stateOffset, NEW, COMPLETING)) {
             outcome = t;
-            UNSAFE.putOrderedInt(this, stateOffset, EXCEPTIONAL); // final state
+            // final state
+            UNSAFE.putOrderedInt(this, stateOffset, EXCEPTIONAL);
             finishCompletion();
         }
     }
 
+    @Override
     public void run() {
         if (state != NEW ||
             !UNSAFE.compareAndSwapObject(this, runnerOffset,
-                                         null, Thread.currentThread()))
+                                         null, Thread.currentThread())) {
             return;
+        }
+
         try {
             Callable<V> c = callable;
             if (c != null && state == NEW) {
@@ -270,8 +280,10 @@ public class FutureTask<V> implements RunnableFuture<V> {
                     ran = false;
                     setException(ex);
                 }
-                if (ran)
+                if (ran){
                     set(result);
+                }
+
             }
         } finally {
             // runner must be non-null until state is settled to
@@ -280,8 +292,9 @@ public class FutureTask<V> implements RunnableFuture<V> {
             // state must be re-read after nulling runner to prevent
             // leaked interrupts
             int s = state;
-            if (s >= INTERRUPTING)
+            if (s >= INTERRUPTING){
                 handlePossibleCancellationInterrupt(s);
+            }
         }
     }
 
@@ -347,6 +360,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
     }
 
     /**
+     * 单向列表 用于记录当前当代线程
      * Simple linked list nodes to record waiting threads in a Treiber
      * stack.  See other classes such as Phaser and SynchronousQueue
      * for more detailed explanation.
@@ -372,9 +386,12 @@ public class FutureTask<V> implements RunnableFuture<V> {
                         LockSupport.unpark(t);
                     }
                     WaitNode next = q.next;
-                    if (next == null)
+                    //next为空直接跳出
+                    if (next == null) {
                         break;
-                    q.next = null; // unlink to help gc
+                    }
+                    // unlink to help gc
+                    q.next = null;
                     q = next;
                 }
                 break;
@@ -447,8 +464,9 @@ public class FutureTask<V> implements RunnableFuture<V> {
             for (;;) {          // restart on removeWaiter race
                 for (WaitNode pred = null, q = waiters, s; q != null; q = s) {
                     s = q.next;
-                    if (q.thread != null)
+                    if (q.thread != null) {
                         pred = q;
+                    }
                     else if (pred != null) {
                         pred.next = s;
                         if (pred.thread == null) // check for race

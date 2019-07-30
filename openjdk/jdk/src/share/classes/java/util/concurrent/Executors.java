@@ -45,6 +45,8 @@ import java.security.AccessControlException;
 import sun.security.util.SecurityConstants;
 
 /**
+ *
+ * 工厂方法
  * Factory and utility methods for {@link Executor}, {@link
  * ExecutorService}, {@link ScheduledExecutorService}, {@link
  * ThreadFactory}, and {@link Callable} classes defined in this
@@ -71,6 +73,10 @@ import sun.security.util.SecurityConstants;
 public class Executors {
 
     /**
+     *
+     * 可重用固定线程数线程池
+     * 核心线程数等于最大线程数
+     * 超时设置为0，意味着空闲线程立即被终止
      * Creates a thread pool that reuses a fixed number of threads
      * operating off a shared unbounded queue.  At any point, at most
      * {@code nThreads} threads will be active processing tasks.

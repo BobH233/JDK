@@ -222,6 +222,7 @@ public class ConcurrentLinkedQueue<E> extends AbstractQueue<E>
     }
 
     /**
+     * 头节点
      * A node from which the first live (non-deleted) node (if any)
      * can be reached in O(1) time.
      * Invariants:
@@ -236,6 +237,7 @@ public class ConcurrentLinkedQueue<E> extends AbstractQueue<E>
     private transient volatile Node<E> head;
 
     /**
+     * 尾节点
      * A node from which the last node on list (that is, the unique
      * node with node.next == null) can be reached in O(1) time.
      * Invariants:
@@ -277,8 +279,10 @@ public class ConcurrentLinkedQueue<E> extends AbstractQueue<E>
                 t = newNode;
             }
         }
-        if (h == null)
+        if (h == null){
             h = t = new Node<E>(null);
+        }
+
         head = h;
         tail = t;
     }
@@ -910,8 +914,10 @@ public class ConcurrentLinkedQueue<E> extends AbstractQueue<E>
      * @param v the element
      */
     private static void checkNotNull(Object v) {
-        if (v == null)
+        if (v == null) {
             throw new NullPointerException();
+        }
+
     }
 
     private boolean casTail(Node<E> cmp, Node<E> val) {

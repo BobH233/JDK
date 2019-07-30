@@ -1018,7 +1018,8 @@ public final class Unsafe {
      * Atomically adds the given value to the current value of a field
      * or array element within the given object <code>o</code>
      * at the given <code>offset</code>.
-     *
+     * 首先尝试获取值，然后进行cas操作，不成功则获取新值，
+     * 再次进行cas操作直至成功
      * @param o object/array to update the field/element in
      * @param offset field/element offset
      * @param delta the value to add
@@ -1028,6 +1029,7 @@ public final class Unsafe {
     public final int getAndAddInt(Object o, long offset, int delta) {
         int v;
         do {
+            //首先尝试获取值
             v = getIntVolatile(o, offset);
         } while (!compareAndSwapInt(o, offset, v, v + delta));
         return v;

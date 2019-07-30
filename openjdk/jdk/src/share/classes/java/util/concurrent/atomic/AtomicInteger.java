@@ -179,7 +179,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
 
     /**
      * Atomically increments by one the current value.
-     *
+     * 自增1
      * @return the updated value
      */
     public final int incrementAndGet() {

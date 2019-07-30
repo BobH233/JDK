@@ -615,6 +615,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
         }
 
         /** Delegates main run loop to outer runWorker  */
+        @Override
         public void run() {
             runWorker(this);
         }
@@ -1329,6 +1330,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      *         cannot be accepted for execution
      * @throws NullPointerException if {@code command} is null
      */
+    @Override
     public void execute(Runnable command) {
         if (command == null) {
             throw new NullPointerException();
