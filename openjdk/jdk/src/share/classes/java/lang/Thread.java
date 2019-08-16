@@ -408,17 +408,21 @@ class Thread implements Runnable {
         this.daemon = parent.isDaemon();
         this.priority = parent.getPriority();
         this.name = name.toCharArray();
-        if (security == null || isCCLOverridden(parent.getClass()))
+        if (security == null || isCCLOverridden(parent.getClass())) {
             this.contextClassLoader = parent.getContextClassLoader();
-        else
+        } else {
             this.contextClassLoader = parent.contextClassLoader;
+        }
+
         this.inheritedAccessControlContext =
                 acc != null ? acc : AccessController.getContext();
         this.target = target;
         setPriority(priority);
-        if (parent.inheritableThreadLocals != null)
-            this.inheritableThreadLocals =
-                ThreadLocal.createInheritedMap(parent.inheritableThreadLocals);
+        //与父ThreadLocal关联
+        if (parent.inheritableThreadLocals != null){
+            this.inheritableThreadLocals = ThreadLocal.createInheritedMap(parent.inheritableThreadLocals);
+        }
+
         /* Stash the specified stack size in case the VM cares */
         this.stackSize = stackSize;
 

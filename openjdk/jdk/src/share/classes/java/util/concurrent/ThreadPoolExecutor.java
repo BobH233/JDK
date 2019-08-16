@@ -2043,12 +2043,14 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
         public AbortPolicy() { }
 
         /**
+         * 直接抛异常
          * Always throws RejectedExecutionException.
          *
          * @param r the runnable task requested to be executed
          * @param e the executor attempting to execute this task
          * @throws RejectedExecutionException always
          */
+        @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             throw new RejectedExecutionException("Task " + r.toString() +
                                                  " rejected from " +
@@ -2057,6 +2059,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     }
 
     /**
+     * 抛弃任务
      * A handler for rejected tasks that silently discards the
      * rejected task.
      */
@@ -2072,6 +2075,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
          * @param r the runnable task requested to be executed
          * @param e the executor attempting to execute this task
          */
+        @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
         }
     }

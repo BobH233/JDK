@@ -88,8 +88,7 @@ public class ThreadLocal<T> {
      * The next hash code to be given out. Updated atomically. Starts at
      * zero.
      */
-    private static AtomicInteger nextHashCode =
-        new AtomicInteger();
+    private static AtomicInteger nextHashCode = new AtomicInteger();
 
     /**
      * The difference between successively generated hash codes - turns
@@ -393,8 +392,9 @@ public class ThreadLocal<T> {
                         Object value = key.childValue(e.value);
                         Entry c = new Entry(key, value);
                         int h = key.threadLocalHashCode & (len - 1);
-                        while (table[h] != null)
+                        while (table[h] != null){
                             h = nextIndex(h, len);
+                        }
                         table[h] = c;
                         size++;
                     }
