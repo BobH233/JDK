@@ -187,6 +187,8 @@ public class LinkedHashMap<K,V>
      */
 
     /**
+     * 通过继承HashMap.Node 并添加Before after
+     * 用来记录前后顺序
      * HashMap.Node subclass for normal LinkedHashMap entries.
      */
     static class Entry<K,V> extends HashMap.Node<K,V> {
@@ -252,6 +254,14 @@ public class LinkedHashMap<K,V>
         head = tail = null;
     }
 
+    /**
+     * 重写了newNdde等方法进行链接
+     * @param hash
+     * @param key
+     * @param value
+     * @param e
+     * @return
+     */
     Node<K,V> newNode(int hash, K key, V value, Node<K,V> e) {
         LinkedHashMap.Entry<K,V> p =
             new LinkedHashMap.Entry<K,V>(hash, key, value, e);
