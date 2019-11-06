@@ -38,6 +38,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
+ * 内存屏障：保证多个线程在到达同一临界点前等待，并且此屏障是可被重用的。
  * A synchronization aid that allows a set of threads to all wait for
  * each other to reach a common barrier point.  CyclicBarriers are
  * useful in programs involving a fixed sized party of threads that
@@ -104,6 +105,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * rows. If the merger
  * determines that a solution has been found then {@code done()} will return
  * {@code true} and each worker will terminate.
+ * 在此示例中，每个worker线程计算数组的一行并且等待所有的行都被计算完成。当所有的行计算完成后，
+ * 屏障的作用是去合并行。
  *
  * <p>If the barrier action does not rely on the parties being suspended when
  * it is executed, then any of the threads in the party could execute that
