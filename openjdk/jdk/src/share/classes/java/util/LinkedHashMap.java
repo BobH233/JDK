@@ -220,7 +220,11 @@ public class LinkedHashMap<K,V>
 
     // internal utilities
 
-    // link at the end of list
+    /***
+     * 新节点直接链接到tail
+     * tail为null，则链接到head
+     * @param p
+     */
     private void linkNodeLast(LinkedHashMap.Entry<K,V> p) {
         LinkedHashMap.Entry<K,V> last = tail;
         tail = p;
@@ -290,18 +294,25 @@ public class LinkedHashMap<K,V>
         return t;
     }
 
+    /**
+     * 移除元素
+     * @param e
+     */
     void afterNodeRemoval(Node<K,V> e) { // unlink
-        LinkedHashMap.Entry<K,V> p =
-            (LinkedHashMap.Entry<K,V>)e, b = p.before, a = p.after;
+        LinkedHashMap.Entry<K,V> p = (LinkedHashMap.Entry<K,V>)e, b = p.before, a = p.after;
         p.before = p.after = null;
-        if (b == null)
+        if (b == null){
+            //移除head情况
             head = a;
-        else
+        } else {
             b.after = a;
-        if (a == null)
+        }
+        if (a == null) {
+            //移除tail情况
             tail = b;
-        else
+        } else {
             a.before = b;
+        }
     }
 
     void afterNodeInsertion(boolean evict) { // possibly remove eldest
