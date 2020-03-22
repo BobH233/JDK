@@ -408,6 +408,7 @@ public class Proxy implements java.io.Serializable {
      */
     private static Class<?> getProxyClass0(ClassLoader loader,
                                            Class<?>... interfaces) {
+        //当接口大于65535报错
         if (interfaces.length > 65535) {
             throw new IllegalArgumentException("interface limit exceeded");
         }
@@ -633,11 +634,14 @@ public class Proxy implements java.io.Serializable {
             String proxyName = proxyPkg + proxyClassNamePrefix + num;
 
             /*
+             *生成代理类的二进制数组
              * Generate the specified proxy class.
              */
             byte[] proxyClassFile = ProxyGenerator.generateProxyClass(
                 proxyName, interfaces, accessFlags);
             try {
+                //内部是native标记的方法，是用C或者C++实现的，这里不深究
+                //方法内部就是通过类加载器和上面生成的代理类的二进制数组等数据，经过处理，成为Class
                 return defineClass0(loader, proxyName,
                                     proxyClassFile, 0, proxyClassFile.length);
             } catch (ClassFormatError e) {
@@ -705,13 +709,13 @@ public class Proxy implements java.io.Serializable {
         throws IllegalArgumentException
     {
         Objects.requireNonNull(h);
-
+        //安全验证
         final SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             checkProxyAccess(Reflection.getCallerClass(), loader, interfaces);
         }
 
-        /*
+        /*查找或者生成代理类
          * Look up or generate the designated proxy class.
          */
         Class<?> cl = getProxyClass0(loader, interfaces);
@@ -726,6 +730,7 @@ public class Proxy implements java.io.Serializable {
 
             final Constructor<?> cons = cl.getConstructor(constructorParams);
             final InvocationHandler ih = h;
+            //如果构造器器不是公共的，需要修改访问权限，使其可以访问
             if (!Modifier.isPublic(cl.getModifiers())) {
                 AccessController.doPrivileged(new PrivilegedAction<Void>() {
                     public Void run() {
@@ -734,6 +739,7 @@ public class Proxy implements java.io.Serializable {
                     }
                 });
             }
+            //通过构造方法，创建对象，传入InvocationHandler 对象
             return cons.newInstance(new Object[]{h});
         } catch (IllegalAccessException|InstantiationException e) {
             throw new InternalError(e.toString(), e);

@@ -101,20 +101,22 @@ final class WeakCache<K, P, V> {
         Objects.requireNonNull(parameter);
 
         expungeStaleEntries();
-
+        //通过上游方法，可以知道key是类加载器，这里是通过类加载器可以获得第一层key
         Object cacheKey = CacheKey.valueOf(key, refQueue);
 
         // lazily install the 2nd level valuesMap for the particular cacheKey
         ConcurrentMap<Object, Supplier<V>> valuesMap = map.get(cacheKey);
+        //如果valuesMap 为空，就新建一个ConcurrentHashMap，
+        //key就是生成出来的cacheKey，并把这个新建的ConcurrentHashMap推到map
         if (valuesMap == null) {
             ConcurrentMap<Object, Supplier<V>> oldValuesMap
-                = map.putIfAbsent(cacheKey,
-                                  valuesMap = new ConcurrentHashMap<>());
+                = map.putIfAbsent(cacheKey, valuesMap = new ConcurrentHashMap<>());
             if (oldValuesMap != null) {
                 valuesMap = oldValuesMap;
             }
         }
 
+        //通过上游方法可以知道key是类加载器，parameter是类本身，这里是通过类加载器和类本身获得第二层key
         // create subKey and retrieve the possible Supplier<V> stored by that
         // subKey from valuesMap
         Object subKey = Objects.requireNonNull(subKeyFactory.apply(key, parameter));
@@ -122,6 +124,9 @@ final class WeakCache<K, P, V> {
         Factory factory = null;
 
         while (true) {
+            //如果有缓存，直接调用get方法后返回，当没有缓存，会继续执行后面的代码，
+            //由于while (true)，会第二次跑到这里，再get返回出去，
+            //其中get方法调用的是WeakCahce中的静态内部类Factory的get方法
             if (supplier != null) {
                 // supplier might be a Factory or a CacheValue<V> instance
                 V value = supplier.get();
@@ -133,6 +138,7 @@ final class WeakCache<K, P, V> {
             // or a supplier that returned null (could be a cleared CacheValue
             // or a Factory that wasn't successful in installing the CacheValue)
 
+            //当factory为空，会创建Factory对象
             // lazily construct a Factory
             if (factory == null) {
                 factory = new Factory(key, parameter, subKey, valuesMap);
@@ -141,6 +147,9 @@ final class WeakCache<K, P, V> {
             if (supplier == null) {
                 supplier = valuesMap.putIfAbsent(subKey, factory);
                 if (supplier == null) {
+                    //当没有代理类缓存的时候，会运行到这里，把Factory的对象赋值给supplier ，
+                    //进行下一次循环，supplier就不为空了，可以调用get方法返回出去了，
+                    //这个Factory位于WeakCahce类中，是一个静态内部类
                     // successfully installed Factory
                     supplier = factory;
                 }
