@@ -409,6 +409,7 @@ public class ReentrantReadWriteLock
             return true;
         }
 
+        @Override
         protected final boolean tryReleaseShared(int unused) {
             Thread current = Thread.currentThread();
             if (firstReader == current) {
@@ -581,8 +582,10 @@ public class ReentrantReadWriteLock
                     getExclusiveOwnerThread() != current)
                     return false;
                 int r = sharedCount(c);
-                if (r == MAX_COUNT)
+                if (r == MAX_COUNT) {
+                    //超过最大持有数量
                     throw new Error("Maximum lock count exceeded");
+                }
                 if (compareAndSetState(c, c + SHARED_UNIT)) {
                     if (r == 0) {
                         firstReader = current;

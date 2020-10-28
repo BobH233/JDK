@@ -193,6 +193,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
     }
 
     /**
+     * 非公平锁实现
      * Sync object for non-fair locks
      */
     static final class NonfairSync extends Sync {
@@ -215,6 +216,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
     }
 
     /**
+     * 公平锁实现
      * Sync object for fair locks
      */
     static final class FairSync extends Sync {
@@ -250,6 +252,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
     }
 
     /**
+     * 默认非公平锁
      * Creates an instance of {@code ReentrantLock}.
      * This is equivalent to using {@code ReentrantLock(false)}.
      */

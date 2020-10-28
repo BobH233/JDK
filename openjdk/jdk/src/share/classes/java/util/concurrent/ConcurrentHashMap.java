@@ -824,6 +824,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     }
 
     /**
+     * 此处并不会真的初始化list，仅仅进行第一次初始化的size计算
      * Creates a new, empty map with an initial table size
      * accommodating the specified number of elements without the need
      * to dynamically resize.
@@ -1011,17 +1012,20 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      */
     /** Implementation for put and putIfAbsent */
     final V putVal(K key, V value, boolean onlyIfAbsent) {
-        if (key == null || value == null) throw new NullPointerException();
+        if (key == null || value == null) {
+            throw new NullPointerException();
+        }
         int hash = spread(key.hashCode());
         int binCount = 0;
         for (Node<K,V>[] tab = table;;) {
             Node<K,V> f; int n, i, fh;
-            if (tab == null || (n = tab.length) == 0)
+            if (tab == null || (n = tab.length) == 0) {
+                //判断未初始化 尝试初始化
                 tab = initTable();
-            else if ((f = tabAt(tab, i = (n - 1) & hash)) == null) {
-                if (casTabAt(tab, i, null,
-                             new Node<K,V>(hash, key, value, null)))
+            } else if ((f = tabAt(tab, i = (n - 1) & hash)) == null) {
+                if (casTabAt(tab, i, null, new Node<K,V>(hash, key, value, null))) {
                     break;                   // no lock when adding to empty bin
+                }
             }
             else if ((fh = f.hash) == MOVED)
                 tab = helpTransfer(tab, f);
@@ -2225,12 +2229,17 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      */
     private final Node<K,V>[] initTable() {
         Node<K,V>[] tab; int sc;
+        //判定是否已经初始化 如果有其他线程已经完成初始化 直接返回
         while ((tab = table) == null || tab.length == 0) {
-            if ((sc = sizeCtl) < 0)
+            if ((sc = sizeCtl) < 0) {
+                //判定是否正在执行初始化逻辑
                 Thread.yield(); // lost initialization race; just spin
-            else if (U.compareAndSwapInt(this, SIZECTL, sc, -1)) {
+            } else if (U.compareAndSwapInt(this, SIZECTL, sc, -1)) {
+                //尝试获取cas锁
                 try {
+                    //此处双重检查 避免其他线程完成初始化释放锁之后本线程获取锁成功情况
                     if ((tab = table) == null || tab.length == 0) {
+                        //初始化数组并返回
                         int n = (sc > 0) ? sc : DEFAULT_CAPACITY;
                         @SuppressWarnings("unchecked")
                         Node<K,V>[] nt = (Node<K,V>[])new Node<?,?>[n];
